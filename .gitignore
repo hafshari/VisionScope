@@ -30,6 +30,8 @@ conaninfo.txt
 graph_info.json
 conan.lock
 **/conan/
+!docs/conan/
+!docs/conan/**
 !conanfile.*
 
 # IDE / editors

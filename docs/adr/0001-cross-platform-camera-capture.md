@@ -284,6 +284,7 @@ No backend is Accepted in this ADR. The leading candidate for a first implementa
 2. Do we need **network cameras / RTSP** early (pushes toward GStreamer/FFmpeg)?
 3. How aggressive should we be about **binary size** vs. **device compatibility**?
 4. Accept packaging a custom Conan recipe for **ccap**, or stay Conan-Center-only for v1?
+   See [Upstreaming to Conan Center](../conan/upstreaming-to-conan-center.md) for the CCI contribution process if we need to package a missing library.
 
 ## Next steps
 

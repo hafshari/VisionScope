@@ -17,3 +17,9 @@ Each ADR is a markdown file named `NNNN-short-title.md` and follows:
 | ADR | Title | Status |
 |-----|-------|--------|
 | [0001](0001-cross-platform-camera-capture.md) | Cross-platform camera capture backend | Proposed |
+
+## Related docs (not ADRs)
+
+| Doc | Purpose |
+|-----|---------|
+| [Upstreaming to Conan Center](../conan/upstreaming-to-conan-center.md) | How to contribute a third-party library recipe to Conan Center Index |
