@@ -1,0 +1,52 @@
+# Build
+build/
+cmake-build-*/
+out/
+bin/
+lib/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+CMakeUserPresets.json
+
+# Conan
+CMakeUserPresets.json
+conanbuildinfo.*
+conaninfo.txt
+graph_info.json
+conan.lock
+**/conan/
+!conanfile.*
+
+# IDE / editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.clangd/
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug / misc
+*.dSYM/
+*.pdb
+*.ilk
+*.log
