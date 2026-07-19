@@ -1,0 +1,4 @@
+# Build tooling for VisionScope (install with: python -m pip install -r requirements.txt)
+cmake==4.4.0
+conan==2.30.0
+ninja==1.13.0
