@@ -16,7 +16,11 @@ Each ADR is a markdown file named `NNNN-short-title.md` and follows:
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [0001](0001-cross-platform-camera-capture.md) | Cross-platform camera capture backend | Proposed |
+| [0001](0001-cross-platform-camera-capture.md) | Cross-platform camera capture backend | Accepted (SDL3) |
+| [0002](0002-terminal-graphics.md) | Terminal graphics protocol selection | Accepted |
+| [0003](0003-conan-cmake-layout.md) | Conan 2 and CMake project layout | Accepted |
+| [0004](0004-mvvm-structure.md) | MVVM application structure | Accepted |
+| [0005](0005-tdd-solid-di.md) | TDD, SOLID, and reference-based DI | Accepted |
 
 ## Related docs (not ADRs)
 

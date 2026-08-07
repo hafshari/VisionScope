@@ -34,6 +34,9 @@ conan.lock
 !docs/conan/**
 !conanfile.*
 
+# Codegraph local index
+.codegraph/
+
 # IDE / editors
 .idea/
 .vscode/
