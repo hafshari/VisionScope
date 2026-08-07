@@ -98,3 +98,45 @@ TEST(CameraViewModelTest, OpenFailureSurfacesStatus) {
   EXPECT_FALSE(vm.start());
   EXPECT_NE(vm.status().find("Open failed"), std::string::npos);
 }
+
+TEST(CameraViewModelTest, StatsLabelShowsResolutionAndFpsPlaceholder) {
+  FakeCameraSource camera;
+  camera.devices = {{"9", "Cam"}};
+  camera.next_frame = RgbFrame(1280, 720);
+  const auto caps = UnicodeCaps();
+
+  CameraViewModel vm{camera, caps};
+  EXPECT_NE(vm.stats_label().find("res —"), std::string::npos);
+  EXPECT_EQ(vm.fps(), 0.0);
+
+  ASSERT_TRUE(vm.start());
+  vm.tick();
+  EXPECT_NE(vm.stats_label().find("res 1280x720"), std::string::npos);
+  EXPECT_NE(vm.stats_label().find("cap"), std::string::npos);
+
+  vm.stop();
+  EXPECT_EQ(vm.fps(), 0.0);
+  EXPECT_NE(vm.stats_label().find("res —"), std::string::npos);
+}
+
+TEST(CameraViewModelTest, RuntimeProtocolSelectionFromDetectedOptions) {
+  FakeCameraSource camera;
+  TerminalCapabilities caps;
+  caps.kitty = true;
+  caps.iterm2 = true;
+  caps.preferred = GraphicsProtocol::kKitty;
+  caps.detected_terminal = "WezTerm";
+
+  CameraViewModel vm{camera, caps};
+
+  ASSERT_GE(vm.available_protocols().size(), 3u);
+  EXPECT_EQ(vm.active_protocol(), GraphicsProtocol::kKitty);
+  EXPECT_TRUE(vm.select_protocol(GraphicsProtocol::kITerm2));
+  EXPECT_EQ(vm.active_protocol(), GraphicsProtocol::kITerm2);
+  EXPECT_FALSE(vm.select_protocol(GraphicsProtocol::kSixel));
+
+  vm.cycle_protocol();
+  EXPECT_EQ(vm.active_protocol(), GraphicsProtocol::kKitty);
+  vm.cycle_protocol();
+  EXPECT_EQ(vm.active_protocol(), GraphicsProtocol::kUnicode);
+}

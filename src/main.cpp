@@ -2,6 +2,7 @@
 #include "visionscope/model/sdl_camera_source.hpp"
 #include "visionscope/model/terminal_capabilities.hpp"
 #include "visionscope/view/app.hpp"
+#include "visionscope/view/make_frame_accelerator.hpp"
 #include "visionscope/viewmodel/camera_view_model.hpp"
 
 #include <cstdlib>
@@ -23,8 +24,9 @@ const char* parse_graphics_flag(int argc, char** argv) {
     if (arg == "--help" || arg == "-h") {
       std::cout
           << "VisionScope — terminal webcam preview\n"
-          << "Usage: visionscope [--graphics=kitty|iterm2|sixel|unicode]\n"
-          << "Env:   VISIONSCOPE_GRAPHICS=...\n";
+          << "Usage: visionscope [--graphics=auto|kitty|iterm2|sixel|unicode]\n"
+          << "  --graphics=auto   detect from terminal (default)\n"
+          << "  --graphics=...    force startup protocol; TUI can still switch\n";
       std::exit(0);
     }
   }
@@ -42,5 +44,7 @@ int main(int argc, char** argv) {
 
   visionscope::model::SdlCameraSource camera;
   visionscope::viewmodel::CameraViewModel view_model{camera, caps};
-  return visionscope::view::run_app(view_model);
+  // Platform Strategy owned here; View borrows by reference (ADR-0005).
+  auto frame_accel = visionscope::view::make_frame_accelerator();
+  return visionscope::view::run_app(view_model, *frame_accel);
 }

@@ -20,10 +20,13 @@ VisionScope/
 ├── requirements.txt            # pip: cmake, conan, ninja
 ├── cmake/                      # helpers if needed
 ├── src/
-│   ├── main.cpp
+│   ├── main.cpp                # composition root
 │   ├── model/
 │   ├── viewmodel/
 │   └── view/
+│       ├── accel/              # portable Strategy defaults + factory
+│       └── platform/           # OS packs; each has CMakeLists.txt
+│           └── apple/          # add_subdirectory only on APPLE
 ├── include/visionscope/        # public/internal headers (as needed)
 ├── recipes/                    # local Conan recipes (e.g. ccap) when required
 └── docs/

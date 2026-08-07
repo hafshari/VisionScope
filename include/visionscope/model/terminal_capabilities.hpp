@@ -3,6 +3,7 @@
 #include "visionscope/model/i_environment.hpp"
 
 #include <string>
+#include <vector>
 
 namespace visionscope::model {
 
@@ -24,6 +25,11 @@ struct TerminalCapabilities {
 };
 
 [[nodiscard]] const char* graphics_protocol_name(GraphicsProtocol protocol);
+
+// Protocols the user may select: always Unicode, plus any detected (and any
+// startup override that forced a protocol not advertised by heuristics).
+[[nodiscard]] std::vector<GraphicsProtocol> available_graphics_protocols(
+    const TerminalCapabilities& caps);
 
 class TerminalCapabilityDetector {
  public:

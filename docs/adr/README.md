@@ -21,6 +21,7 @@ Each ADR is a markdown file named `NNNN-short-title.md` and follows:
 | [0003](0003-conan-cmake-layout.md) | Conan 2 and CMake project layout | Accepted |
 | [0004](0004-mvvm-structure.md) | MVVM application structure | Accepted |
 | [0005](0005-tdd-solid-di.md) | TDD, SOLID, and reference-based DI | Accepted |
+| [0006](0006-platform-acceleration.md) | Platform acceleration Strategy and folder layout | Accepted |
 
 ## Related docs (not ADRs)
 

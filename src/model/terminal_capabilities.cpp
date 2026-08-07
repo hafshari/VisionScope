@@ -22,7 +22,7 @@ bool equals_ci(std::string_view a, std::string_view b) {
 }
 
 GraphicsProtocol parse_override(std::string_view value) {
-  if (value.empty()) {
+  if (value.empty() || equals_ci(value, "auto") || equals_ci(value, "detect")) {
     return GraphicsProtocol::kNone;
   }
   if (equals_ci(value, "kitty")) {
@@ -53,6 +53,36 @@ bool env_nonempty(const IEnvironment& env, std::string_view name) {
   return value.has_value() && !value->empty();
 }
 
+void mark_protocol_available(TerminalCapabilities& caps, GraphicsProtocol p) {
+  switch (p) {
+    case GraphicsProtocol::kKitty:
+      caps.kitty = true;
+      break;
+    case GraphicsProtocol::kITerm2:
+      caps.iterm2 = true;
+      break;
+    case GraphicsProtocol::kSixel:
+      caps.sixel = true;
+      break;
+    case GraphicsProtocol::kUnicode:
+    case GraphicsProtocol::kNone:
+      break;
+  }
+}
+
+GraphicsProtocol prefer_from_flags(const TerminalCapabilities& caps) {
+  if (caps.kitty) {
+    return GraphicsProtocol::kKitty;
+  }
+  if (caps.iterm2) {
+    return GraphicsProtocol::kITerm2;
+  }
+  if (caps.sixel) {
+    return GraphicsProtocol::kSixel;
+  }
+  return GraphicsProtocol::kUnicode;
+}
+
 }  // namespace
 
 const char* graphics_protocol_name(GraphicsProtocol protocol) {
@@ -71,35 +101,28 @@ const char* graphics_protocol_name(GraphicsProtocol protocol) {
   return "none";
 }
 
+std::vector<GraphicsProtocol> available_graphics_protocols(
+    const TerminalCapabilities& caps) {
+  std::vector<GraphicsProtocol> out;
+  out.push_back(GraphicsProtocol::kUnicode);
+  if (caps.sixel) {
+    out.push_back(GraphicsProtocol::kSixel);
+  }
+  if (caps.iterm2) {
+    out.push_back(GraphicsProtocol::kITerm2);
+  }
+  if (caps.kitty) {
+    out.push_back(GraphicsProtocol::kKitty);
+  }
+  return out;
+}
+
 TerminalCapabilityDetector::TerminalCapabilityDetector(const IEnvironment& env)
     : env_(env) {}
 
 TerminalCapabilities TerminalCapabilityDetector::detect(
     const char* graphics_override) const {
   TerminalCapabilities caps;
-
-  std::string override_source;
-  std::string override_value;
-  if (graphics_override != nullptr && graphics_override[0] != '\0') {
-    override_value = graphics_override;
-    override_source = "cli";
-  } else if (auto from_env = env_.get("VISIONSCOPE_GRAPHICS")) {
-    override_value = *from_env;
-    if (!override_value.empty()) {
-      override_source = "env";
-    }
-  }
-
-  const GraphicsProtocol forced = parse_override(override_value);
-  if (forced != GraphicsProtocol::kNone) {
-    caps.override_source = override_source;
-    caps.preferred = forced;
-    caps.kitty = forced == GraphicsProtocol::kKitty;
-    caps.iterm2 = forced == GraphicsProtocol::kITerm2;
-    caps.sixel = forced == GraphicsProtocol::kSixel;
-    caps.detected_terminal = "override";
-    return caps;
-  }
 
   const std::string term_program = env_or_empty(env_, "TERM_PROGRAM");
   const std::string term = env_or_empty(env_, "TERM");
@@ -139,14 +162,15 @@ TerminalCapabilities TerminalCapabilityDetector::detect(
     caps.detected_terminal = "unknown";
   }
 
-  if (caps.kitty) {
-    caps.preferred = GraphicsProtocol::kKitty;
-  } else if (caps.iterm2) {
-    caps.preferred = GraphicsProtocol::kITerm2;
-  } else if (caps.sixel) {
-    caps.preferred = GraphicsProtocol::kSixel;
-  } else {
-    caps.preferred = GraphicsProtocol::kUnicode;
+  caps.preferred = prefer_from_flags(caps);
+
+  if (graphics_override != nullptr && graphics_override[0] != '\0') {
+    const GraphicsProtocol forced = parse_override(graphics_override);
+    if (forced != GraphicsProtocol::kNone) {
+      caps.override_source = "cli";
+      caps.preferred = forced;
+      mark_protocol_available(caps, forced);
+    }
   }
 
   return caps;

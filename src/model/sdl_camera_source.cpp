@@ -99,8 +99,23 @@ std::optional<Frame> SdlCameraSource::grab_frame() {
     return std::nullopt;
   }
 
-  Uint64 timestamp_ns = 0;
-  SDL_Surface* surface = SDL_AcquireCameraFrame(impl_->camera, &timestamp_ns);
+  // macOS (and others) deliver permission / frame readiness via the event queue.
+  SDL_PumpEvents();
+
+  // Drain to the newest frame so a slow UI/encode path does not display stale
+  // buffered frames (extra latency).
+  SDL_Surface* surface = nullptr;
+  while (true) {
+    Uint64 timestamp_ns = 0;
+    SDL_Surface* next = SDL_AcquireCameraFrame(impl_->camera, &timestamp_ns);
+    if (next == nullptr) {
+      break;
+    }
+    if (surface != nullptr) {
+      SDL_ReleaseCameraFrame(impl_->camera, surface);
+    }
+    surface = next;
+  }
   if (surface == nullptr) {
     return std::nullopt;
   }

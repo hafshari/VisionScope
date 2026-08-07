@@ -28,15 +28,23 @@ WezTerm typically supports iTerm2 (and often Kitty/Sixel depending on version); 
 
 Combine (in order of reliability):
 
-1. **Environment heuristics** — `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `ITERM_SESSION_ID`, `WEZTERM_PANE`, `GHOSTTY_*`, etc.
-2. **Optional terminal queries** later (DA1 / XTGETTCAP) when heuristics are ambiguous — not required for the scaffold MVP
-3. **Explicit override** via CLI flag or env (e.g. `VISIONSCOPE_GRAPHICS=kitty|iterm2|sixel|unicode`) for debugging and CI
+1. **Environment heuristics for terminal identity** — read host-provided vars only (`TERM_PROGRAM`, `KITTY_WINDOW_ID`, `ITERM_SESSION_ID`, `WEZTERM_PANE`, `GHOSTTY_*`, etc.). These identify the emulator; they are not an app configuration API.
+2. **Optional terminal queries** later (DA1 / XTGETTCAP) when heuristics are ambiguous
+3. **CLI override** `--graphics=kitty|iterm2|sixel|unicode` sets the *initial* preferred protocol; omit or pass `auto` to keep detection. Detection still records every supported protocol for the runtime picker.
+
+Do **not** use an app-specific env var (e.g. `VISIONSCOPE_GRAPHICS`) for protocol selection. Prefer auto-detect + CLI (same pattern as `timg -p` / `imgcat --protocol`) so behavior is explicit per invocation and not inherited from shell profiles. Runtime TUI selection covers interactive changes.
 
 Never assume graphics support solely from `$TERM=xterm-256color`.
 
+### Runtime selection
+
+- Detection builds the **available** set: Unicode (always) plus each advertised bitmap protocol.
+- CLI `--graphics=` picks the **startup** active protocol (and adds that protocol to available if heuristics missed it).
+- The TUI exposes the available set (menu + `g` to cycle). ViewModel owns the mutable active protocol; the graphics adapter draws with that choice (falling back to Unicode half-blocks until Kitty/iTerm2/Sixel emitters exist).
+
 ### Integration with FTXUI
 
-- FTXUI owns chrome: device list, status, key bindings.
+- FTXUI owns chrome: device list, protocol picker, status, key bindings.
 - The graphics adapter writes protocol bytes on the main/UI thread after (or coordinated with) the FTXUI screen flush so image placement stays aligned with the preview region.
 - ViewModels expose RGB/RGBA frames only; they never emit escape sequences ([ADR-0004](0004-mvvm-structure.md)).
 
