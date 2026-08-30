@@ -94,6 +94,8 @@ int run_app(viewmodel::CameraViewModel& view_model, IFrameAccelerator& accel) {
 
   TerminalGraphicsAdapter graphics(view_model.capabilities(), accel);
   auto screen = ScreenInteractive::Fullscreen();
+  // Mouse: keep TrackMouse on for clicks. After Install we switch from FTXUI's
+  // any-motion (1003) to press/release only (1000+1006) to avoid hover flicker.
 
   int selected = view_model.selected_index();
   std::vector<std::string> entries;
@@ -319,10 +321,14 @@ int run_app(viewmodel::CameraViewModel& view_model, IFrameAccelerator& accel) {
   });
 
   Loop loop(&screen, component);
+  // FTXUI Install enables 1003 (any-motion), which supersedes click-only 1000.
+  // Drop hover reports, then re-assert 1000+1006 so presses still work.
+  std::cout << "\033[?1003l\033[?1000h\033[?1006h" << std::flush;
+
   while (!loop.HasQuitted()) {
     loop.RunOnceBlocking();
-    // Capture-only wakes throttle encodes; other wakes (keys/menus) force a
-    // repaint because FTXUI Draw clears Kitty/iTerm2 images.
+    // Capture-only wakes throttle encodes; other wakes (keys/menus/clicks) force
+    // a repaint because FTXUI Draw clears Kitty/iTerm2 images.
     const bool from_capture =
         capture_wake.exchange(false, std::memory_order_relaxed);
     present_overlay(/*force=*/!from_capture);
